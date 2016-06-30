@@ -15,10 +15,11 @@ var hashtagRegex = new RegExp(hashtag, "i");
 
 function write(data) {
 	if ( typeof data === 'string') {
-		console.log(data);
+	    console.log(data);
 	}
 	else if (data.text && data.user && data.user.screen_name) {
-		console.log(data.user.screen_name + ": " + data.text);
+	    console.log(data.user.screen_name + ": " + data.text);
+
 		testForHashtag(data);
 	}
 	else if (data.delete) {
@@ -34,11 +35,16 @@ function write(data) {
 
 function testForHashtag(data) {
 	if(data.retweeted) return;
-	if(data.text.match(hashtagRegex) !== null) {
-		twit.retweetStatus(data.id_str, function(){
-			console.log('retweet callback');
-		});
-	}
+    if (data.text.match(hashtagRegex) !== null) {
+        var tweetId = data.id_str;
+        console.log('retweet callback, tweetId: ' + tweetId);
+        twit.post('statuses/retweet/' + tweetId, function (error, tweet, response) {
+            var errorObj = util.inspect(error);
+            var tweetObj = util.inspect(tweet);
+            var responseObj = util.inspect(response);
+            // do something if there are errors.
+        });
+    }
 }
 
 function reconnect() {
@@ -46,10 +52,10 @@ function reconnect() {
 }
 
 function startStreaming() {
-	twit.stream('user', function(stream) {
+    twit.stream('user', function (stream) {
 		console.log('starting stream');
 		stream.on('data', write);
-		stream.on('end', reconnect)
+		stream.on('end', reconnect);
 	});
 }
 
